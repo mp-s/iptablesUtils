@@ -21,7 +21,7 @@ systemctl disable  dnat$localport
 rm -f /lib/systemd/system/dnat$localport.service
 rm -f /etc/dnat/$localport.conf 
 
-arr1=(`iptables -L PREROUTING -n -t nat --line-number |grep DNAT|grep "dpt:$localport "|sort -r|awk '{print $1,$3,$9}'|tr " " ":"|tr "\n" " "`)
+arr1=(`iptables -L PREROUTING -n -t nat --line-number |grep DNAT|grep "dpt:$localport "|sort -rn|awk '{print $1,$3,$9}'|tr " " ":"|tr "\n" " "`)
 for cell in ${arr1[@]}  # cell= 1:tcp:to:8.8.8.8:543
 do
         arr2=(`echo $cell|tr ":" " "`)  #arr2=(1 tcp to 8.8.8.8 543)
@@ -32,7 +32,7 @@ do
         echo 清除本机$localport端口到$targetIP:$targetPort的${proto}PREROUTING转发规则$index
         iptables -t nat  -D PREROUTING $index
         echo 清除对应的POSTROUTING规则
-        toRmIndexs=(`iptables -L POSTROUTING -n -t nat --line-number|grep $targetIP|grep $targetPort|grep $proto|awk  '{print $1}'|sort -r|tr "\n" " "`)
+        toRmIndexs=(`iptables -L POSTROUTING -n -t nat --line-number|grep $targetIP|grep $targetPort|grep $proto|awk  '{print $1}'|sort -rn|tr "\n" " "`)
         for cell1 in ${toRmIndexs[@]} 
         do
             iptables -t nat  -D POSTROUTING $cell1

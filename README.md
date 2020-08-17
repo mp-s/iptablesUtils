@@ -12,13 +12,7 @@
 ## 用法
 
 ```shell
-wget -qO natcfg.sh http://www.arloor.com/sh/iptablesUtils/natcfg.sh && bash natcfg.sh
-```
-
-或
-
-```
-wget -qO natcfg.sh https://raw.githubusercontent.com/arloor/iptablesUtils/master/natcfg.sh && bash natcfg.sh
+wget -qO natcfg.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/natcfg.sh && bash natcfg.sh
 ```
 
 输出如下：
@@ -44,22 +38,6 @@ wget -qO natcfg.sh https://raw.githubusercontent.com/arloor/iptablesUtils/master
 
 -----------------------------------------------------------------------------
 
-## 推荐新项目——使用nftables实现nat转发
+## 本fork可能修复了：
 
-iptables的后继者nftables已经在debain和centos最新的操作系统中作为生产工具提供，nftables提供了很多新的特性，解决了iptables很多痛点。
-
-因此创建了一个新的项目[/arloor/nftables-nat-rust](https://github.com/arloor/nftables-nat-rust)。该项目使用nftables作为nat转发实现，相比本项目具有如下优点：
-
-1. 规则更新是原子的，不会出现规则删不干净的情况——[issue 15](https://github.com/arloor/iptablesUtils/issues/15)
-2. 支持端口段转发——[issue 3](https://github.com/arloor/iptablesUtils/issues/3)
-3. 转发规则使用配置文件，可以进行备份以及倒入——[issue 14](https://github.com/arloor/iptablesUtils/issues/14)
-4. 更加现代（听起来很帅有没有～
-
-所以**强烈推荐**使用[/arloor/nftables-nat-rust](https://github.com/arloor/nftables-nat-rust)。不用担心，本项目依然可以正常稳定使用。
-
-PS: 新旧两个项目并不兼容，因此在两个工具之间切换时，请全新安装指定系统以确保系统纯净。
-
-## 赏个鸡腿吧
-
-<img src="http://cdn.arloor.com/wechat_shoukuan.jpg" alt="" width="400px" style="max-width: 100%;">
-
+1. 规则删不干净的情况——[issue 15](https://github.com/arloor/iptablesUtils/issues/15)
