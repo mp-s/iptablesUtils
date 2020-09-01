@@ -17,7 +17,7 @@ setupService(){
     if [ "$checkDnatScript" == 1 ]; then
         echo ""
     else
-        echo "在线获取脚本中"
+        echo "在线获取系统服务脚本"
         wget -qO /usr/local/bin/dnat.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/dnat.sh||{
             echo "脚本不存在，请通过github提交issue通知作者"
             exit 1
