@@ -12,10 +12,17 @@ echo -e "${red}注意1${black}: 到域名的转发规则在添加后需要等待
 echo -e "${red}注意2${black}: 到IP的转发规则在重启后会失效，这是iptables的特性"
 echo
 setupService(){
-    wget -qO /usr/local/bin/dnat.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/dnat.sh||{
-        echo "脚本不存在，请通过github提交issue通知作者"
-        exit 1
-    }
+    checkDnatScript=$(echo 43510de2326277ffa4a8ca0177246328d49ec41b166216deb128f69448aa8545  /usr/local/bin/dnat.sh|sha256sum -c 2>&1|grep OK|wc -l)
+
+    if [ "$checkDnatScript" == 1 ]; then
+        echo ""
+    else
+        echo "在线获取脚本中"
+        wget -qO /usr/local/bin/dnat.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/dnat.sh||{
+            echo "脚本不存在，请通过github提交issue通知作者"
+            exit 1
+        }
+    fi
     echo 
 
 
