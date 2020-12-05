@@ -22,6 +22,7 @@ base=/etc/dnat
 mkdir $base 2>/dev/null
 conf=$base/conf
 firstAfterBoot=1
+fullPrint=0
 
 
 ####
@@ -131,6 +132,7 @@ dnatIfNeed(){
         else
         # echo 不存在强制nat
         needNat=1
+        fullPrint=1
         fi
 
         if [ "$firstAfterBoot" = "1" ];then
@@ -161,10 +163,13 @@ do
     }
 done
 # 减少日志输出浪费
-# echo "###########################################################"
-# iptables -L PREROUTING -n -t nat --line-number
-# iptables -L POSTROUTING -n -t nat --line-number
-# echo "###########################################################"
+if [ "$fullPrint" = "1" ];then
+    fullPrint=0
+    echo "###########################################################"
+    iptables -L PREROUTING -n -t nat --line-number
+    iptables -L POSTROUTING -n -t nat --line-number
+fi
+echo "###########################################################"
 firstAfterBoot=0
 sleep 60
 done
