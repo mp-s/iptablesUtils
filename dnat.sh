@@ -113,12 +113,15 @@ dnatIfNeed(){
     
       if  [[ -f "$base/${1}IP" ]];then
         local last=`cat $base/${1}IP`
-        [ "$last" != "$remote" ]&&needNat=1&&echo IP变化 进行nat
-        else
+        if [ "$last" != "$remote" ];then
+            needNat=1
+            echo IP变化 进行nat
+            fullPrint=1
+        fi
+      else
         # echo 不存在强制nat
         needNat=1
-        fullPrint=1
-        fi
+      fi
 
         if [ "$firstAfterBoot" = "1" ];then
             echo 第一次运行，强制刷新nat
