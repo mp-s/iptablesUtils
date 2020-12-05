@@ -141,6 +141,7 @@ dnatIfNeed(){
         if [ "$firstAfterBoot" = "1" ];then
             echo 第一次运行，强制刷新nat
             needNat=1
+            fullPrint=1
         fi
 
         echo $remote >$base/${1}IP
