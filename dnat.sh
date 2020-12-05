@@ -145,10 +145,11 @@ do
         dnatIfNeed ${arr2[0]} ${arr2[1]} ${arr2[2]}
     }
 done
-echo "###########################################################"
-iptables -L PREROUTING -n -t nat --line-number
-iptables -L POSTROUTING -n -t nat --line-number
-echo "###########################################################"
+# 减少日志输出浪费
+# echo "###########################################################"
+# iptables -L PREROUTING -n -t nat --line-number
+# iptables -L POSTROUTING -n -t nat --line-number
+# echo "###########################################################"
 firstAfterBoot=0
 sleep 60
 done
