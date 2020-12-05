@@ -97,8 +97,13 @@ dnatIfNeed(){
     local needNat=0
     local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
     if [ "$remote" = "" ];then
-            echo Warn:解析失败
-          return 1;
+        echo Warn:首次解析失败
+        local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
+        if [ "$remote" = "" ];then
+                echo Warn:二次解析失败
+            return 1;
+        fi
+        # return 1;
      fi
   }||{
       echo "Error: host命令缺失或传递的参数数量有误"
