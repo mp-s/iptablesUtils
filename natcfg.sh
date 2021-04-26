@@ -237,8 +237,8 @@ addDnat(){
     local remoteport=
     local remotehost=
     local valid=
-    echo -n "本地端口号:" ;read localport
-    echo -n "远程端口号:" ;read remoteport
+    echo -n "本地端口号:" ;read -e localport
+    echo -n "远程端口号:" ;read -e remoteport
     # echo $localport $remoteport
     # 判断端口是否为数字
     echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] && echo $remoteport |[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
@@ -246,7 +246,7 @@ addDnat(){
         return 1;
     }
 
-    echo -n "目标域名:" ;read remotehost
+    echo -n "目标域名:" ;read -e remotehost
     # 检查输入的不是IP
     if [ "$remotehost" = "" -o "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
         isip=true
@@ -268,7 +268,7 @@ LINE
 
 rmDnat(){
     local localport=
-    echo -n "本地端口号:" ;read localport
+    echo -n "本地端口号:" ;read -e localport
     sed -i "/^$localport>.*/d" $conf
 
     rmIptablesNat $localport
@@ -314,8 +314,8 @@ addSnat(){
     local localport=
     local remoteport=
     local remotehost=
-    echo -n "本地端口号:" ;read localport
-    echo -n "远程端口号:" ;read remoteport
+    echo -n "本地端口号:" ;read -e localport
+    echo -n "远程端口号:" ;read -e remoteport
     # echo $localport $remoteport
     # 判断端口是否为数字
     echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] && echo $remoteport |[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
@@ -323,7 +323,7 @@ addSnat(){
         return 1;
     }
 
-    echo -n "目标IP:" ;read remotehost
+    echo -n "目标IP:" ;read -e remotehost
     # 检查输入的不是IP
     if [ "$remotehost" = "" -o "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
         rmIptablesNat $localport
@@ -341,7 +341,7 @@ addSnat(){
 
 rmSnat(){
     local localport=
-    echo -n "本地端口号:" ;read localport
+    echo -n "本地端口号:" ;read -e localport
     echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] &&rmIptablesNat $localport
 }
 
