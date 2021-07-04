@@ -1,7 +1,5 @@
 # 利用iptables设置端口转发的shell脚本
 
-电报讨论组 https://t.me/popstary
-
 **本项目支持转发到ddns域名、支持udp转发，但不支持端口段转发**
 
 很多玩VPS的人都会有设置端口转发、进行中转的需求，在这方面也有若干种方案，比如socat、haproxy、brook等等。他们都有一些局限或者问题，比如socat会爆内存，haproxy不支持udp转发。
@@ -17,18 +15,22 @@ wget -qO natcfg.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/n
 
 输出如下：
 
-```
+```shell
 用途: 便捷的设置iptables端口转发
 注意1: 到域名的转发规则在添加后需要等待2分钟才会生效，且在机器重启后仍然有效
-注意2: 到IP的转发规则在重启后会失效，这是iptables的特性
 
 你要做什么呢（请输入数字）？Ctrl+C 退出本脚本
-1) 增加到域名的转发      3) 增加到IP的转发        5) 列出所有到域名的转发
-2) 删除到域名的转发      4) 删除到IP的转发        6) 查看iptables转发规则
+1) 增加域名或IP转发      3) 列出所有转发
+2) 删除域名或IP转发      4) 查看iptables转发规则
 #? 
 ```
 
-此时按照需要，输入1-6中的任意数字，然后按照提示即可
+此时按照需要，输入1-4中的任意数字，然后按照提示即可
+
+## 卸载
+```shell
+bash <(curl -LSs https://raw.githubusercontent.com/mp-s/iptablesUtils/master/dnat-uninstall.sh)
+```
 
 ## trojan转发
 

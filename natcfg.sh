@@ -9,7 +9,6 @@ touch $conf
 # wget -qO natcfg.sh https://raw.githubusercontent.com/mp-s/iptablesUtils/master/natcfg.sh && bash natcfg.sh
 echo -e "${red}用途${black}: 便捷的设置iptables端口转发"
 echo -e "${red}注意1${black}: 到域名的转发规则在添加后需要等待2分钟才会生效，且在机器重启后仍然有效"
-echo -e "${red}注意2${black}: 到IP的转发规则在重启后会失效，这是iptables的特性"
 echo
 setupService(){
     cat > /usr/local/bin/dnat.sh <<"AAAA"
@@ -283,7 +282,7 @@ rmDnat(){
     read -e -p "本地端口号:" localport
     # 判断端口是否为数字
     echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
-        echo  -e "${red}本地端口和目标端口请输入数字！！${black}"
+        echo  -e "${red}端口请输入数字！！${black}"
         return 1;
     }
     sed -i "/^$localport>.*/d" $conf
@@ -327,64 +326,23 @@ do
 done
 }
 
-addSnat(){
-    local localport=
-    local remoteport=
-    local remotehost=
-    read -e -p "本地端口号:" localport
-    read -e -p "远程端口号:" remoteport
-    # echo $localport $remoteport
-    # 判断端口是否为数字
-    echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] && echo $remoteport |[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
-        echo  -e "${red}本地端口和目标端口请输入数字！！${black}"
-        return 1;
-    }
 
-    read -e -p "目标IP:" remotehost
-    # 检查输入的不是IP
-    if [ "$remotehost" = "" -o "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
-        rmIptablesNat $localport
-
-        ## 建立新的中转规则
-        iptables -t nat -A PREROUTING -p tcp --dport $localport -j DNAT --to-destination $remotehost:$remoteport
-        iptables -t nat -A PREROUTING -p udp --dport $localport -j DNAT --to-destination $remotehost:$remoteport
-        iptables -t nat -A POSTROUTING -p tcp -d $remotehost --dport $remoteport -j SNAT --to-source $localIP
-        iptables -t nat -A POSTROUTING -p udp -d $remotehost --dport $remoteport -j SNAT --to-source $localIP
-    else
-        echo 请输入一个IP
-        return 1
-    fi    
-}
-
-rmSnat(){
-    local localport=
-    read -e -p "本地端口号:" localport
-    echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] &&rmIptablesNat $localport
-}
 
 
 
 echo  -e "${red}你要做什么呢（请输入数字）？Ctrl+C 退出本脚本${black}"
-select todo in 增加到域名的转发 删除到域名的转发 列出所有到域名的转发 查看iptables转发规则
+select todo in 增加域名或IP转发 删除域名或IP转发 列出所有转发 查看iptables转发规则
 do
     case $todo in
-    增加到域名的转发)
+    增加域名或IP转发)
         addDnat
         # break
         ;;
-    删除到域名的转发)
+    删除域名或IP转发)
         rmDnat
         # break
         ;;
-    # 增加到IP的转发)
-    #     addSnat
-    #     # break
-    #     ;;
-    # 删除到IP的转发)
-    #     rmSnat
-    #     # break
-    #     ;;
-    列出所有到域名的转发)
+    列出所有转发)
         lsDnat
         ;;
     查看iptables转发规则)
