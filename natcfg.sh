@@ -34,14 +34,14 @@ echo ""
 ####
 turnOnNat(){
     # 开启端口转发
-    echo "1.端口转发开启  【成功】"
+    echo "1. 端口转发开启  【成功】"
     sed -n '/^net.ipv4.ip_forward=1/'p /etc/sysctl.conf | grep -q "net.ipv4.ip_forward=1"
     if [ $? -ne 0 ]; then
         echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && sysctl -p
     fi
 
     #开放FORWARD链
-    echo "2.开放iptbales中的FORWARD链  【成功】"
+    echo "2. 开放iptbales中的FORWARD链  【成功】"
     arr1=(`iptables -L FORWARD -n  --line-number |grep "REJECT"|grep "0.0.0.0/0"|sort -rn|awk '{print $1,$2,$5}'|tr " " ":"|tr "\n" " "`)  #16:REJECT:0.0.0.0/0 15:REJECT:0.0.0.0/0
     for cell in ${arr1[@]}
     do
@@ -63,18 +63,18 @@ testVars(){
     # 判断端口是否为数字
     local valid=
     echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] && echo $remoteport |[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
-       # echo  -e "${red}本地端口和目标端口请输入数字！！${black}";
+       echo  -e "${red}本地端口和目标端口请输入数字！！${black}";
        return 1;
     }
 
     # 检查输入的不是IP
-    if [ "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
-        local isip=true
-        local remote=$remotehost
+    # if [ "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
+    #     local isip=true
+    #     local remote=$remotehost
 
-        # echo -e "${red}警告：你输入的目标地址是一个ip!${black}"
-        return 2;
-    fi
+    #     # echo -e "${red}警告：你输入的目标地址是一个ip!${black}"
+    #     return 2;
+    # fi
 }
 
 dnat(){
@@ -111,16 +111,29 @@ dnat(){
 dnatIfNeed(){
   [ "$#" = "3" ]&&{
     local needNat=0
-    local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
-    if [ "$remote" = "" ];then
-        echo Warn:首次解析失败
+    # 如果已经是ip
+    if [ "$(echo  $2 |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
+        local remote=$2
+        local isip=1
+    else
         local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
+        local isip=0
+    fi
+    if [ "$isip" = "0" ];then
         if [ "$remote" = "" ];then
+            echo Warn:首次解析失败
+            local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
+            if [ "$remote" = "" ];then
                 echo Warn:二次解析失败
-            return 1;
+                local remote=$(host -t a  $2|grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}"|head -1)
+                if [ "$remote" = "" ];then
+                    echo Warn:三次解析失败
+                    return 1;
+                fi
+            fi
+            # return 1;
         fi
-        # return 1;
-     fi
+    fi
   }||{
       echo "Error: host命令缺失或传递的参数数量有误"
       return 1;
@@ -162,7 +175,7 @@ do
     arr2=(`echo $cell|tr ":" " "|tr ">" " "`)  #arr2=16 REJECT 0.0.0.0/0
     # 过滤非法的行
     [ "${arr2[2]}" != "" -a "${arr2[3]}" = "" ]&& testVars ${arr2[0]}  ${arr2[1]} ${arr2[2]}&&{
-        echo "转发规则${arr2[0]}>${arr2[1]}:${arr2[2]}"
+        echo "转发规则 ${arr2[0]} => ${arr2[1]}:${arr2[2]}"
         dnatIfNeed ${arr2[0]} ${arr2[1]} ${arr2[2]}
     }
 done
@@ -177,6 +190,7 @@ echo "###########################################################"
 firstAfterBoot=0
 sleep 60
 done
+
 AAAA
     echo 
 
@@ -246,17 +260,13 @@ addDnat(){
         return 1;
     }
 
-    read -e -p "目标域名:" remotehost
+    read -e -p "目标域名/IP:" remotehost
     # 检查输入的不是IP
-    if [ "$remotehost" = "" -o "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
-        isip=true
-        remote=$remotehost
-        echo -e "${red}请输入一个ddns域名${black}"
+    if [ "$remotehost" = "" ];then
+        echo -e "${red}请输入一个域名/IP${black}"
         return 1
     fi
 
-    setupService
-    echo "成功添加转发规则 $localport>$remotehost:$remoteport 大约两分钟后规则会生效"
 
     sed -i "s/^$localport.*/$localport>$remotehost:$remoteport/g" $conf
     [ "$(cat $conf|grep "$localport>$remotehost:$remoteport")" = "" ]&&{
@@ -264,16 +274,23 @@ addDnat(){
 $localport>$remotehost:$remoteport
 LINE
     }
+    echo "成功添加转发规则 $localport>$remotehost:$remoteport 大约两分钟后规则会生效"
+    setupService
 }
 
 rmDnat(){
     local localport=
     read -e -p "本地端口号:" localport
+    # 判断端口是否为数字
+    echo "$localport"|[ -n "`sed -n '/^[0-9][0-9]*$/p'`" ]||{
+        echo  -e "${red}本地端口和目标端口请输入数字！！${black}"
+        return 1;
+    }
     sed -i "/^$localport>.*/d" $conf
 
     rmIptablesNat $localport
     #删除临时文件  
-    rm -f $base/${1}IP  
+    rm -f $base/${localport}IP  
     echo "done!"
 }
 
@@ -289,13 +306,13 @@ testVars(){
     }
 
     # 检查输入的不是IP
-    if [ "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
-        local isip=true
-        local remote=$remotehost
+    # if [ "$(echo  $remotehost |grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}')" != "" ];then
+    #     local isip=true
+    #     local remote=$remotehost
 
-        # echo -e "${red}警告：你输入的目标地址是一个ip!${black}"
-        return 2;
-    fi
+    #     # echo -e "${red}警告：你输入的目标地址是一个ip!${black}"
+    #     return 2;
+    # fi
 }
 
 lsDnat(){
@@ -348,7 +365,7 @@ rmSnat(){
 
 
 echo  -e "${red}你要做什么呢（请输入数字）？Ctrl+C 退出本脚本${black}"
-select todo in 增加到域名的转发 删除到域名的转发 增加到IP的转发 删除到IP的转发 列出所有到域名的转发 查看iptables转发规则
+select todo in 增加到域名的转发 删除到域名的转发 列出所有到域名的转发 查看iptables转发规则
 do
     case $todo in
     增加到域名的转发)
@@ -359,14 +376,14 @@ do
         rmDnat
         # break
         ;;
-    增加到IP的转发)
-        addSnat
-        # break
-        ;;
-    删除到IP的转发)
-        rmSnat
-        # break
-        ;;
+    # 增加到IP的转发)
+    #     addSnat
+    #     # break
+    #     ;;
+    # 删除到IP的转发)
+    #     rmSnat
+    #     # break
+    #     ;;
     列出所有到域名的转发)
         lsDnat
         ;;
